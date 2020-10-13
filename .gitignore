@@ -1,0 +1,5 @@
+/settings.php
+*.log
+
+.idea
+
