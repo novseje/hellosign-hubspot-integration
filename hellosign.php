@@ -3,11 +3,13 @@ require_once __DIR__.'/settings.php';
 
 file_put_contents(__DIR__.'/hellosign.log', date('Y-m-d H:i:s')."\n".var_export($_REQUEST, true)."\n\n", FILE_APPEND);
 
+//$_REQUEST['json'] = file_get_contents(__DIR__.'/test.json');
 
 if (isset($_REQUEST['json'])) {
 	$hellosign_data = json_decode($_REQUEST['json'], true);
 
-	if ($hellosign_data['event']['event_type'] == 'signature_request_signed' || $hellosign_data['event']['event_type'] == 'signature_request_all_signed') {
+	// $hellosign_data['event']['event_type'] == 'signature_request_signed' ||
+	if ($hellosign_data['event']['event_type'] == 'signature_request_all_signed') {
 
 		$signer_data = $hellosign_data['signature_request']['signatures'][0];
 		$email = $signer_data['signer_email_address'];
@@ -27,10 +29,12 @@ if (isset($_REQUEST['json'])) {
             } elseif ($field['type'] == 'checkbox') {
 		        if ($field['value'] == true) {
                     list($name, $value) = explode(':', $field['name'], 2);
-                    $fields[] = [
-                        "name" => $name,
-                        "value" => $value,
-                    ];
+                    if ($value != NULL) {
+                        $fields[] = [
+                            "name" => $name,
+                            "value" => $value,
+                        ];
+                    }
                 }
             }
         }
@@ -66,8 +70,9 @@ if (isset($_REQUEST['json'])) {
 	    $curl_errors = curl_error($ch);
 	    @curl_close($ch);
 
+	    $logstr = var_export($fields, true)."\n\n";
 
-		$logstr =  "curl Errors: " . $curl_errors
+		$logstr .=  "curl Errors: " . $curl_errors
 			. "\nStatus code: " . $status_code
 	    	. "\nResponse: " . $response;
 		file_put_contents(__DIR__.'/hubspot.log', date('Y-m-d H:i:s')."\n".$logstr."\n\n", FILE_APPEND);
